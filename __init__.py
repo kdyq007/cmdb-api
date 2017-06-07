@@ -17,10 +17,10 @@ from extensions import db
 from extensions import mail
 from extensions import cache
 from extensions import celery
+# from celery import Celery
 from extensions import rd
 from models.account import User
 from lib.template import filters
-
 
 APP_NAME = "CMDB-API"
 
@@ -55,8 +55,33 @@ def configure_extensions(app):
     db.init_app(app)
     mail.init_app(app)
     cache.init_app(app)
-    celery.config_from_object(app.config)
+    # celery = make_celery(app)
+    # celery.config_from_object(app.config)
+    celery.conf.update(app.config)
     rd.init_app(app)
+
+
+def make_celery(app):
+    CeleryInst = Celery(app.import_name,
+                        backend=app.config['CELERY_RESULT_BACKEND'],
+                        broker=app.config['BROKER_URL'])
+    CeleryInst.conf.update(app.config)
+    TaskBase = CeleryInst.Task
+
+    class ContextTask(TaskBase):
+        """Will be execute when create the instance object of ContextTasks."""
+        # Will context(Flask's Extends) of app object(Producer Sit)
+        # be included in celery object(Consumer Site).
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with App.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+
+    # Include the app_context into celery.Task.
+    # Let other Flask extensions can be normal calls.
+    CeleryInst.Task = ContextTask
+    return CeleryInst
 
 
 def configure_i18n(app):
@@ -80,6 +105,7 @@ def configure_blueprints(app, modules):
 
 def configure_identity(app):
     principal = Principal(app)
+
     @identity_loaded.connect_via(app)
     def on_identity_loaded(sender, identity):
         g.user = User.query.from_identity(identity)
@@ -101,7 +127,7 @@ def configure_logging(app):
         "%(asctime)s %(levelname)s %(pathname)s %(lineno)d\n%(message)s")
     mail_handler.setFormatter(mail_formater)
     mail_handler.setLevel(logging.ERROR)
-    #if not app.debug:
+    # if not app.debug:
     #    app.logger.addHandler(mail_handler)
     formatter = logging.Formatter(
         "%(asctime)s %(levelname)s %(pathname)s %(lineno)d - %(message)s")

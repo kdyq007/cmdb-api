@@ -6,18 +6,17 @@ import time
 
 from flask import current_app
 
+
 from extensions import celery
 from extensions import db
 from extensions import rd
-import lib.ci
 
 
 @celery.task(name="cmdb.ci_cache", queue="cmdb_async")
-def ci_cache(ci_id):
+def ci_cache(ci):
     time.sleep(0.1)
     db.session.close()
-    m = lib.ci.CIManager()
-    ci = m.get_ci_by_id(ci_id, need_children=False, use_master=True)
+    ci_id = ci.ci_id
     rd.delete(ci_id)
     rd.add({ci_id: json.dumps(ci)})
     current_app.logger.info("%d caching.........." % ci_id)
