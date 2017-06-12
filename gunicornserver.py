@@ -41,7 +41,7 @@ class GunicornServer(Command):
                    default=self.daemon)
         )
 
-    def handle(self, app, host, port, workers, worker_class, daemon):
+    def __call__(self, app, host, port, workers, worker_class, daemon):
 
         from gunicorn import version_info
 

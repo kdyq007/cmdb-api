@@ -76,6 +76,5 @@ if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] != "runserver":
         manager.run(default_command="run")
     else:
-        host = app.config.get("HOST")
-        port = app.config.get("PORT")
-        app.run(host=host, port=port, debug=True)
+        app.run(host=app.config.get("HOST"), port=app.config.get("PORT"),
+                debug=True)
