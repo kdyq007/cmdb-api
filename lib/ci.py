@@ -195,7 +195,7 @@ class CIManager(object):
             return abort(400, "add CI error")
         his_manager = CIAttributeHistoryManger()
         his_manager.add(ci.ci_id, histories)
-        ci_cache.apply_async([ci], queue="cmdb_async")
+        ci_cache.apply_async([ci.ci_id], queue="cmdb_async")
         return ci.ci_id
 
     def update_unique_value(self, ci_id, args):
