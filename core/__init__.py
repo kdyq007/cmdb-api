@@ -9,3 +9,4 @@ from ci import ci
 from history import history
 from account import account
 from special import special
+from dns_record import dnsrecord

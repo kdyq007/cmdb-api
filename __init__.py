@@ -32,6 +32,7 @@ MODULES = (
     (core.history, "/api/v0.1/history"),
     (core.account, "/api/v0.1/accounts"),
     (core.special, ""),
+    (core.dnsrecord, "/api/v0.1/dnsrecord"),
 )
 
 
